@@ -293,7 +293,7 @@ function bs(c){const p=pal(c);return `background:${p.bg};color:${p.text}`;}
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function escAttr(s){return String(s).replace(/"/g,'&quot;');}
 function dateInRange(ds,ev){return ds>=ev.date&&ds<=(ev.dateEnd||ev.date);}
-function evtsForDate(ds){return Object.entries(events).filter(([k,e])=>dateInRange(ds,e)).map(([k,e])=>({...e,_key:k})).sort((a,b)=>(a.time||'')>(b.time||'')?1:-1);}
+function evtsForDate(ds){return Object.entries(events).filter(([k,e])=>dateInRange(ds,e)).map(([k,e])=>({...e,_key:k})).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:(a.time||'')>(b.time||'')?1:-1);}
 function monthEvts(m){
   const mF=`${YEAR}-${String(m+1).padStart(2,'0')}-01`,mL=fmt(YEAR,m,new Date(YEAR,m+1,0).getDate());
   return Object.entries(events).filter(([k,e])=>{const end=e.dateEnd||e.date;return e.date<=mL&&end>=mF;}).map(([k,e])=>({...e,_key:k})).sort((a,b)=>a.date>b.date?1:-1);
