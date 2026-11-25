@@ -188,8 +188,10 @@ body.admin-mode .notice-edit-btn { display:inline-block; }
 body.admin-mode .admin-fab { display:none; }
 
 /* ── TOAST ── */
-.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--black); color:white; padding:10px 20px; border-radius:99px; font-size:13px; font-weight:500; opacity:0; transition:opacity .3s; pointer-events:none; z-index:200; }
-.toast.show { opacity:1; }
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--black); color:white; padding:10px 20px; border-radius:99px; font-size:13px; font-weight:500; opacity:0; transition:opacity .3s; pointer-events:none; z-index:200; display:inline-flex; align-items:center; gap:14px; max-width:92vw; }
+.toast.show { opacity:1; pointer-events:auto; }
+.toast-btn { background:transparent; border:none; color:var(--mint); font-weight:700; cursor:pointer; font-family:inherit; font-size:13px; padding:0; letter-spacing:.02em; }
+.toast-btn:hover { color:#4DD9CB; }
 
 .loading { text-align:center; padding:5rem 2rem; color:var(--text3); }
 .ld { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--mint); margin:0 3px; animation:ld 1.2s infinite ease-in-out; }
@@ -233,6 +235,7 @@ body.admin-mode .admin-fab { display:none; }
       <button class="admin-btn" onclick="openSettings()">⚙️ 설정</button>
       <button class="admin-btn" onclick="openCatManager()">🏷️ 분류</button>
       <button class="admin-btn" onclick="openDefaultMonthSetting()">📅 첫화면</button>
+      <button class="admin-btn" onclick="openCopyFromYear()">📥 전년 복사</button>
       <button class="admin-btn danger" onclick="doLogout()">로그아웃</button>
     </div>
   </div>
@@ -292,8 +295,8 @@ const firebaseConfig = {
 // (Firebase Console에서 Auth → Users → Add user로 이메일/비번 생성 후
 //  아래 두 상수에 그 값을 입력하세요)
 // ══════════════════════════════════════════
-const FIREBASE_ADMIN_EMAIL = 'knkscampusk@gmail.com';
-const FIREBASE_ADMIN_PASSWORD = 'knks7888';
+const FIREBASE_ADMIN_EMAIL = 'ENTER_FIREBASE_EMAIL_HERE';
+const FIREBASE_ADMIN_PASSWORD = 'ENTER_FIREBASE_PASSWORD_HERE';
 const ADMIN_UI_ID = 'admin';
 const ADMIN_UI_PW = 'admin6688';
 
@@ -729,12 +732,39 @@ async function saveForm(key, isEdit) {
 }
 window.saveForm = saveForm;
 
+let lastDeleted = null;  // {data, year, expireTimerId}
 async function delEvt(key) {
   if (!confirm('이 일정을 삭제할까요?')) return;
-  try { await eventsRef.child(key).remove(); closeModal(); showToast('삭제되었습니다.'); }
-  catch (e) { alert('삭제 실패: ' + e.message); }
+  const data = events[key];
+  if (!data) return;
+  try {
+    await eventsRef.child(key).remove();
+    closeModal();
+    if (lastDeleted && lastDeleted.expireTimerId) clearTimeout(lastDeleted.expireTimerId);
+    const yearAtDelete = YEAR;
+    lastDeleted = {data: {...data}, year: yearAtDelete, expireTimerId: null};
+    showToast('삭제되었습니다.', {
+      duration: 10000,
+      action: {label: '되돌리기', handler: undoDelete}
+    });
+    lastDeleted.expireTimerId = setTimeout(() => { lastDeleted = null; }, 10000);
+  } catch (e) { alert('삭제 실패: ' + e.message); }
 }
 window.delEvt = delEvt;
+
+async function undoDelete() {
+  if (!lastDeleted) return;
+  const {data, year} = lastDeleted;
+  try {
+    await db.ref(`events/${year}`).push(data);
+    if (data.date && year === YEAR) {
+      curM = parseInt(data.date.split('-')[1]) - 1;
+    }
+    lastDeleted = null;
+    showToast('복구되었습니다.');
+  } catch (e) { alert('복구 실패: ' + e.message); }
+}
+window.undoDelete = undoDelete;
 
 // ══════════════════════════════════════════
 // CATEGORY MANAGER (admin)
@@ -956,6 +986,157 @@ async function clearDefaultMonth() {
 window.clearDefaultMonth = clearDefaultMonth;
 
 // ══════════════════════════════════════════
+// COPY FROM PREVIOUS YEAR (admin)
+// ══════════════════════════════════════════
+let copyPreviewData = null;  // {items, notices, srcYear}
+
+function openCopyFromYear() {
+  if (!isAdmin) return;
+  const sourceYears = AVAILABLE_YEARS.filter(y => y !== YEAR);
+  if (!sourceYears.length) { alert('복사할 수 있는 다른 연도가 없습니다.'); return; }
+  const yearOpts = sourceYears.map(y => `<option value="${y}">${y}년</option>`).join('');
+  const monthOpts = MONTHS.map((m, i) => `<option value="${i+1}">${m}</option>`).join('');
+  copyPreviewData = null;
+  document.getElementById('modal').className = 'modal wide';
+  document.getElementById('modal').innerHTML = `
+    <div class="mh"><h2>전년도 일정 복사</h2><button class="cx" onclick="closeModal()">✕</button></div>
+    <div class="mb">
+      <p style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:14px;background:var(--bg);padding:10px 12px;border-radius:var(--rs)">다른 연도의 일정을 현재 선택된 <strong style="color:var(--text)">${YEAR}년</strong>으로 복사합니다. 날짜는 연도만 ${YEAR}로 교체됩니다. 분류가 삭제된 일정은 ⚠ 표시되며 자동 제외됩니다.</p>
+      <div class="frow2">
+        <div class="fg"><label class="fl">소스 연도</label><select class="fse" id="srcYear">${yearOpts}</select></div>
+        <div class="fg"><label class="fl">범위</label><select class="fse" id="srcRange"><option value="all">전체</option>${monthOpts}</select></div>
+      </div>
+      <div class="fg" style="margin-bottom:8px"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="srcIncludeNotices">월별 공지사항도 함께 복사</label></div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn-g" onclick="loadCopyPreview()">📂 불러오기</button></div>
+      <div id="copyPreview"></div>
+    </div>
+    <div class="mf"><button class="btn-g" onclick="closeModal()">취소</button><button class="btn-p" id="copyConfirmBtn" onclick="confirmCopyFromYear()" style="display:none">선택한 항목 등록</button></div>`;
+  document.getElementById('overlay').classList.add('open');
+}
+window.openCopyFromYear = openCopyFromYear;
+
+function mapDate(dateStr, toYear) {
+  const parts = dateStr.split('-');
+  let m = parts[1], d = parseInt(parts[2]);
+  if (m === '02' && d === 29) {
+    const yn = parseInt(toYear);
+    const isLeap = (yn % 4 === 0 && yn % 100 !== 0) || yn % 400 === 0;
+    if (!isLeap) d = 28;
+  }
+  return `${toYear}-${m}-${String(d).padStart(2,'0')}`;
+}
+
+async function loadCopyPreview() {
+  const srcYear = document.getElementById('srcYear').value;
+  const srcRange = document.getElementById('srcRange').value;
+  const includeNotices = document.getElementById('srcIncludeNotices').checked;
+  const preview = document.getElementById('copyPreview');
+  preview.innerHTML = '<p style="color:var(--text3);font-size:13px;padding:1rem 0;text-align:center">불러오는 중...</p>';
+  try {
+    const snap = await db.ref(`events/${srcYear}`).once('value');
+    const src = snap.val() || {};
+    let filtered = Object.entries(src).filter(([k, e]) => {
+      if (srcRange === 'all') return true;
+      return parseInt(e.date.split('-')[1]) === parseInt(srcRange);
+    });
+    if (!filtered.length) {
+      preview.innerHTML = `<p style="color:var(--text3);font-size:13px;padding:1rem 0;text-align:center">선택한 범위에 일정이 없습니다.</p>`;
+      document.getElementById('copyConfirmBtn').style.display = 'none';
+      copyPreviewData = null;
+      return;
+    }
+    filtered.sort(([, a], [, b]) => a.date < b.date ? -1 : 1);
+    const items = filtered.map(([k, e]) => {
+      const cat = cats.find(c => c.id === e.cat);
+      const newDate = mapDate(e.date, YEAR);
+      const newDateEnd = e.dateEnd ? mapDate(e.dateEnd, YEAR) : null;
+      const catValid = !!cat;
+      return {key: k, data: e, newDate, newDateEnd, catValid, include: catValid};
+    });
+    let noticeData = null;
+    if (includeNotices) {
+      const nsnap = await db.ref(`notices/${srcYear}`).once('value');
+      noticeData = nsnap.val() || {};
+    }
+    copyPreviewData = {items, notices: noticeData, srcYear};
+    renderCopyPreview();
+  } catch (e) {
+    preview.innerHTML = `<p style="color:var(--red);font-size:13px;padding:1rem 0">불러오기 실패: ${escHtml(e.message)}</p>`;
+    copyPreviewData = null;
+  }
+}
+window.loadCopyPreview = loadCopyPreview;
+
+function renderCopyPreview() {
+  if (!copyPreviewData) return;
+  const {items, notices: noticeData} = copyPreviewData;
+  const selCount = items.filter(x => x.include).length;
+  const validCount = items.filter(x => x.catValid).length;
+  const invalidCount = items.length - validCount;
+  const noticeInfo = noticeData ? `<p style="font-size:12px;color:var(--mint-dark);margin-bottom:10px;padding:6px 10px;background:var(--mint-light);border-radius:var(--rs)">📢 월별 공지 ${Object.keys(noticeData).length}개월 함께 복사됩니다.</p>` : '';
+  const invalidInfo = invalidCount ? `<p style="font-size:11px;color:#854F0B;margin-bottom:6px">⚠ 분류가 삭제된 ${invalidCount}건은 자동 제외됩니다.</p>` : '';
+  const rows = items.map((it, i) => {
+    const cat = cats.find(c => c.id === it.data.cat);
+    const catBadge = cat ? `<span class="badge" style="${bs(cat.color)}">${escHtml(cat.name)}</span>` : `<span class="badge" style="background:#FDF0F0;color:#D63B3B">⚠ 분류 없음</span>`;
+    const dateDisplay = it.newDateEnd && it.newDateEnd !== it.newDate ? `${it.newDate} ~ ${it.newDateEnd}` : it.newDate;
+    const origDisplay = it.data.dateEnd && it.data.dateEnd !== it.data.date ? `${it.data.date} ~ ${it.data.dateEnd}` : it.data.date;
+    return `<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)"><input type="checkbox" ${it.include?'checked':''} onchange="toggleCopyItem(${i},this.checked)" ${it.catValid?'':'disabled'} style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:${it.catValid?'pointer':'not-allowed'}"><div style="flex:1;min-width:0"><div style="font-size:11px;color:var(--text3);margin-bottom:3px">${origDisplay} → <strong style="color:var(--text)">${dateDisplay}</strong></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${catBadge}<span style="font-size:13px;font-weight:500">${escHtml(it.data.title)}</span></div></div></div>`;
+  }).join('');
+  document.getElementById('copyPreview').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px"><div style="font-size:12px;color:var(--text2)"><strong style="color:var(--text)">${selCount}건 선택</strong> / 총 ${items.length}건</div><div style="display:flex;gap:6px"><button class="icon-btn" onclick="toggleAllCopyItems(true)">전체 선택</button><button class="icon-btn" onclick="toggleAllCopyItems(false)">전체 해제</button></div></div>
+    ${invalidInfo}${noticeInfo}
+    <div style="max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--rs);padding:4px 12px;background:var(--surface)">${rows}</div>`;
+  const btn = document.getElementById('copyConfirmBtn');
+  btn.style.display = 'inline-block';
+  btn.textContent = `선택한 ${selCount}건 등록`;
+  btn.disabled = selCount === 0;
+  btn.style.opacity = selCount === 0 ? '0.5' : '1';
+}
+
+function toggleCopyItem(idx, checked) {
+  if (!copyPreviewData) return;
+  if (copyPreviewData.items[idx].catValid) {
+    copyPreviewData.items[idx].include = checked;
+    renderCopyPreview();
+  }
+}
+window.toggleCopyItem = toggleCopyItem;
+
+function toggleAllCopyItems(checked) {
+  if (!copyPreviewData) return;
+  copyPreviewData.items.forEach(it => { if (it.catValid) it.include = checked; });
+  renderCopyPreview();
+}
+window.toggleAllCopyItems = toggleAllCopyItems;
+
+async function confirmCopyFromYear() {
+  if (!copyPreviewData) return;
+  const selected = copyPreviewData.items.filter(it => it.include);
+  if (!selected.length) { alert('선택된 일정이 없습니다.'); return; }
+  const noticeData = copyPreviewData.notices;
+  const noticeCount = noticeData ? Object.keys(noticeData).length : 0;
+  if (!confirm(`${selected.length}건의 일정을 ${YEAR}년으로 복사합니다${noticeCount?' (+ 월별 공지 '+noticeCount+'개)':''}.\n진행할까요?`)) return;
+  try {
+    const promises = selected.map(it => {
+      const newData = {...it.data, date: it.newDate};
+      if (it.newDateEnd && it.newDateEnd !== it.newDate) newData.dateEnd = it.newDateEnd;
+      else delete newData.dateEnd;
+      return eventsRef.push(newData);
+    });
+    await Promise.all(promises);
+    if (noticeData) {
+      for (const [m, text] of Object.entries(noticeData)) {
+        await noticesRef.child(m).set(text);
+      }
+    }
+    copyPreviewData = null;
+    closeModal();
+    showToast(`${selected.length}건 복사 완료${noticeCount?' (공지 '+noticeCount+'개 포함)':''}`);
+  } catch (e) { alert('복사 실패: ' + e.message); }
+}
+window.confirmCopyFromYear = confirmCopyFromYear;
+
+// ══════════════════════════════════════════
 // LOGIN / LOGOUT
 // ══════════════════════════════════════════
 function openLoginModal() {
@@ -1028,15 +1209,30 @@ function exitAdminMode() {
 // ══════════════════════════════════════════
 function closeModal() {
   document.getElementById('overlay').classList.remove('open');
-  editCatId = null; selColor = 'pink'; pendingLogoData = '';
+  editCatId = null; selColor = 'pink'; pendingLogoData = ''; copyPreviewData = null;
 }
 window.closeModal = closeModal;
 
-function showToast(msg) {
+let toastTimerId = null;
+function showToast(msg, options) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
+  clearTimeout(toastTimerId);
+  const action = options && options.action;
+  const duration = (options && options.duration) || 2200;
+  if (action) {
+    t.innerHTML = '';
+    const span = document.createElement('span');
+    span.textContent = msg;
+    const btn = document.createElement('button');
+    btn.className = 'toast-btn';
+    btn.textContent = action.label;
+    btn.onclick = () => { t.classList.remove('show'); action.handler(); };
+    t.appendChild(span); t.appendChild(btn);
+  } else {
+    t.textContent = msg;
+  }
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
+  toastTimerId = setTimeout(() => t.classList.remove('show'), duration);
 }
 </script>
 </body>
