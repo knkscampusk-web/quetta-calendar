@@ -291,14 +291,12 @@ const firebaseConfig = {
 };
 
 // ══════════════════════════════════════════
-// ADMIN CREDENTIALS
-// (Firebase Console에서 Auth → Users → Add user로 이메일/비번 생성 후
-//  아래 두 상수에 그 값을 입력하세요)
+// 관리자 로그인:
+// Firebase Console → Authentication → Users 에서 생성한
+// 이메일/비밀번호로 직접 로그인합니다.
+// 비밀번호 변경·관리자 추가·삭제는 Firebase Console에서 수행하세요.
+// (비번이 소스코드에 저장되지 않아 공개 저장소에서도 안전)
 // ══════════════════════════════════════════
-const FIREBASE_ADMIN_EMAIL = 'ENTER_FIREBASE_EMAIL_HERE';
-const FIREBASE_ADMIN_PASSWORD = 'ENTER_FIREBASE_PASSWORD_HERE';
-const ADMIN_UI_ID = 'admin';
-const ADMIN_UI_PW = 'admin6688';
 
 // ══════════════════════════════════════════
 // CONSTANTS / STATE
@@ -1144,9 +1142,9 @@ function openLoginModal() {
   document.getElementById('modal').innerHTML = `
     <div class="mh"><h2>관리자 로그인</h2><button class="cx" onclick="closeModal()">✕</button></div>
     <div class="mb">
-      <div class="fg"><label class="fl">ID</label><input class="fi" type="text" id="loginId" placeholder="아이디" autocomplete="off"></div>
-      <div class="fg"><label class="fl">PASSWORD</label><input class="fi" type="password" id="loginPw" placeholder="비밀번호" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <div id="loginErr" style="display:none;color:var(--red);font-size:12px;margin-top:8px;text-align:center">아이디 또는 비밀번호가 올바르지 않습니다.</div>
+      <div class="fg"><label class="fl">EMAIL</label><input class="fi" type="email" id="loginId" placeholder="이메일 주소" autocomplete="username" inputmode="email"></div>
+      <div class="fg"><label class="fl">PASSWORD</label><input class="fi" type="password" id="loginPw" placeholder="비밀번호" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div id="loginErr" style="display:none;color:var(--red);font-size:12px;margin-top:8px;text-align:center"></div>
     </div>
     <div class="mf"><button class="btn-g" onclick="closeModal()">취소</button><button class="btn-p" onclick="doLogin()">로그인</button></div>`;
   document.getElementById('overlay').classList.add('open');
@@ -1155,21 +1153,26 @@ function openLoginModal() {
 window.openLoginModal = openLoginModal;
 
 async function doLogin() {
-  const id = (document.getElementById('loginId')||{}).value?.trim();
+  const email = (document.getElementById('loginId')||{}).value?.trim();
   const pw = (document.getElementById('loginPw')||{}).value;
   const errEl = document.getElementById('loginErr');
-  if (id !== ADMIN_UI_ID || pw !== ADMIN_UI_PW) {
-    if (errEl) errEl.style.display = 'block';
-    return;
-  }
+  const setErr = (msg) => { if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; } };
+  if (!email || !pw) { setErr('이메일과 비밀번호를 모두 입력해주세요.'); return; }
   try {
-    await auth.signInWithEmailAndPassword(FIREBASE_ADMIN_EMAIL, FIREBASE_ADMIN_PASSWORD);
+    await auth.signInWithEmailAndPassword(email, pw);
     isAdmin = true;
     closeModal();
     enterAdminMode();
     showToast('관리자 모드로 전환되었습니다.');
   } catch (e) {
-    alert('Firebase 인증 실패: ' + e.message + '\n\n코드 상단의 FIREBASE_ADMIN_EMAIL / FIREBASE_ADMIN_PASSWORD 값이 올바른지 확인하세요.');
+    const code = e.code || '';
+    let msg = '이메일 또는 비밀번호가 올바르지 않습니다.';
+    if (code === 'auth/invalid-email') msg = '이메일 형식이 올바르지 않습니다.';
+    else if (code === 'auth/user-disabled') msg = '비활성화된 계정입니다.';
+    else if (code === 'auth/network-request-failed') msg = '네트워크 오류입니다. 연결을 확인하세요.';
+    else if (code === 'auth/too-many-requests') msg = '시도 횟수가 많습니다. 잠시 후 다시 시도하세요.';
+    else if (code === 'auth/operation-not-allowed') msg = 'Firebase Console에서 이메일/비밀번호 로그인이 사용 설정되어 있는지 확인하세요.';
+    setErr(msg);
   }
 }
 window.doLogin = doLogin;
