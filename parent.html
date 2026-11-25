@@ -77,9 +77,34 @@ body.admin-mode .add-evt-btn { display:inline-flex; }
 .chip-rm { border-radius:0; margin:0 -6px; }
 .chip-re { border-radius:0 3px 3px 0; margin-left:-6px; }
 .more { font-size:10px; color:var(--text3); padding:1px 4px; cursor:pointer; }
-.legend { display:flex; flex-wrap:wrap; gap:10px; }
-.leg { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text2); }
+.legend { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.leg { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text2); padding:4px 9px; border:1px solid var(--border); border-radius:99px; cursor:pointer; user-select:none; transition:all .12s; background:var(--surface); }
+.leg:hover { border-color:var(--text2); }
+.leg.inactive { opacity:.35; background:transparent; }
+.leg.inactive .leg-dot { background:var(--text3) !important; }
 .leg-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.leg-reset { font-size:11px; color:var(--mint-dark); background:none; border:none; cursor:pointer; padding:4px 8px; font-family:inherit; font-weight:600; }
+.leg-reset:hover { text-decoration:underline; }
+
+/* ── UPCOMING ── */
+.upcoming-section { margin-bottom:20px; padding-bottom:18px; border-bottom:1px dashed var(--border); }
+.upcoming-label { font-size:12px; font-weight:700; margin-bottom:10px; color:var(--mint-dark); text-transform:uppercase; letter-spacing:.05em; display:flex; align-items:center; gap:6px; }
+.upcoming-card { background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--mint); border-radius:var(--rs); padding:10px 12px; cursor:pointer; margin-bottom:6px; transition:border-color .12s; }
+.upcoming-card:hover { border-color:var(--mint); border-left-color:var(--mint-dark); }
+.upcoming-top { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:3px; }
+.dday-badge { font-size:10px; font-weight:800; padding:2px 7px; border-radius:99px; background:var(--mint); color:white; flex-shrink:0; letter-spacing:.02em; }
+.dday-badge.today { background:var(--red); animation:pulse 2s ease-in-out infinite; }
+.dday-badge.tomorrow { background:#F08A3E; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.6;} }
+.upcoming-title { font-size:13px; font-weight:600; }
+.upcoming-meta { font-size:11px; color:var(--text3); margin-top:2px; }
+
+/* ── SEARCH ── */
+.search-result-list { max-height:400px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; }
+.cal-head-right { display:flex; gap:6px; align-items:center; }
+.search-btn { padding:6px 10px; background:none; border:1px solid var(--border2); border-radius:var(--rs); font-size:13px; cursor:pointer; color:var(--text2); font-family:inherit; display:flex; align-items:center; gap:4px; }
+.search-btn:hover { background:var(--surface2); color:var(--text); }
+.search-hl { background:#FFF2A8; padding:0 2px; border-radius:2px; }
 
 /* ── NOTICE ── */
 .notice-wrap { margin-top:20px; border-radius:var(--r); overflow:hidden; border:1px solid var(--border); }
@@ -252,7 +277,10 @@ body.admin-mode .admin-fab { display:none; }
     <div id="calArea" style="display:none">
       <div class="cal-head">
         <div class="cal-label" id="calLabel"></div>
-        <button class="add-evt-btn" onclick="openForm(null,null)">+ 일정 추가</button>
+        <div class="cal-head-right">
+          <button class="search-btn" onclick="openSearch()" title="일정 검색">🔍 검색</button>
+          <button class="add-evt-btn" onclick="openForm(null,null)">+ 일정 추가</button>
+        </div>
       </div>
       <div class="cal-grid" id="calGrid"></div>
       <div class="legend" id="legend"></div>
@@ -329,6 +357,7 @@ let eventsRef=null, noticesRef=null;
 let editCatId=null, selColor='pink', pendingLogoData='';
 let formDateType='single';
 let defaultMonthApplied=false;
+let activeCatsFilter=null;  // null = 전체, Set = 지정 분류만
 
 // ══════════════════════════════════════════
 // HELPERS
@@ -341,10 +370,20 @@ function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function escAttr(s){return String(s).replace(/"/g,'&quot;');}
 function autoLink(s){return escHtml(s).replace(/(https?:\/\/[^\s<>"']+)/g,'<a href="$1" target="_blank" rel="noopener noreferrer" style="color:#1BBFB0;word-break:break-all;">$1</a>');}
 function dateInRange(ds,ev){const end=ev.dateEnd||ev.date;return ds>=ev.date&&ds<=end;}
-function evtsForDate(ds){return Object.entries(events).filter(([k,e])=>dateInRange(ds,e)).map(([k,e])=>({...e,_key:k})).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:(a.time||'')>(b.time||'')?1:-1);}
+function catVisible(id){return !activeCatsFilter||activeCatsFilter.has(id);}
+function evtsForDate(ds){return Object.entries(events).filter(([k,e])=>dateInRange(ds,e)&&catVisible(e.cat)).map(([k,e])=>({...e,_key:k})).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:(a.time||'')>(b.time||'')?1:-1);}
 function monthEvts(m){
   const mF=`${YEAR}-${String(m+1).padStart(2,'0')}-01`,mL=fmt(YEAR,m,new Date(parseInt(YEAR),m+1,0).getDate());
-  return Object.entries(events).filter(([k,e])=>{const end=e.dateEnd||e.date;return e.date<=mL&&end>=mF;}).map(([k,e])=>({...e,_key:k})).sort((a,b)=>a.date>b.date?1:-1);
+  return Object.entries(events).filter(([k,e])=>{if(!catVisible(e.cat))return false;const end=e.dateEnd||e.date;return e.date<=mL&&end>=mF;}).map(([k,e])=>({...e,_key:k})).sort((a,b)=>a.date>b.date?1:-1);
+}
+function daysUntil(dateStr){const t=new Date();t.setHours(0,0,0,0);const d=new Date(dateStr);d.setHours(0,0,0,0);return Math.round((d-t)/86400000);}
+function ddayLabel(dateStr){const n=daysUntil(dateStr);if(n===0)return'오늘';if(n===1)return'내일';if(n<0)return null;return`D-${n}`;}
+function upcomingEvts(days){
+  const t=new Date();t.setHours(0,0,0,0);
+  const todayStr=fmt(t.getFullYear(),t.getMonth(),t.getDate());
+  const lim=new Date(t);lim.setDate(lim.getDate()+days);
+  const limStr=fmt(lim.getFullYear(),lim.getMonth(),lim.getDate());
+  return Object.entries(events).filter(([k,e])=>catVisible(e.cat)&&e.date>=todayStr&&e.date<=limStr).map(([k,e])=>({...e,_key:k})).sort((a,b)=>a.date<b.date?-1:1);
 }
 function formatDateRange(ev){
   if(!ev.dateEnd||ev.dateEnd===ev.date)return ev.date+' ('+DKO[new Date(ev.date).getDay()]+')';
@@ -406,6 +445,7 @@ function subscribeYear(year) {
     if (calEl) calEl.style.display = 'block';
     const yb = document.getElementById('yearBadge');
     if (yb) yb.textContent = year + '년';
+    handleEventHash();
   });
   noticesRef.on('value', snap => {
     notices = snap.val() || {};
@@ -496,11 +536,36 @@ function renderTabs() {
 function renderLeg() {
   const leg = document.getElementById('legend');
   if (!leg) return;
-  leg.innerHTML = cats.map(c => {
+  const items = cats.map(c => {
     const p = pal(c.color);
-    return `<div class="leg"><div class="leg-dot" style="background:${p.text}"></div>${c.name}</div>`;
+    const active = catVisible(c.id);
+    return `<div class="leg${active?'':' inactive'}" onclick="toggleCatFilter('${c.id}')" title="${active?'해제':'활성'}"><div class="leg-dot" style="background:${p.text}"></div>${escHtml(c.name)}</div>`;
   }).join('');
+  const reset = activeCatsFilter ? `<button class="leg-reset" onclick="resetCatFilter()">전체 보기</button>` : '';
+  leg.innerHTML = items + reset;
 }
+
+function toggleCatFilter(id) {
+  if (!activeCatsFilter) {
+    // 처음 토글: 이 분류만 끄기
+    activeCatsFilter = new Set(cats.map(c => c.id));
+    activeCatsFilter.delete(id);
+  } else if (activeCatsFilter.has(id)) {
+    activeCatsFilter.delete(id);
+    if (activeCatsFilter.size === 0) activeCatsFilter = null;
+  } else {
+    activeCatsFilter.add(id);
+    if (activeCatsFilter.size === cats.length) activeCatsFilter = null;
+  }
+  renderLeg(); renderCal(); renderSide();
+}
+window.toggleCatFilter = toggleCatFilter;
+
+function resetCatFilter() {
+  activeCatsFilter = null;
+  renderLeg(); renderCal(); renderSide();
+}
+window.resetCatFilter = resetCatFilter;
 
 function renderCal() {
   const lbl = document.getElementById('calLabel');
@@ -564,22 +629,52 @@ function addCell(g, dt, other, today) {
 }
 
 function renderSide() {
-  const evts = monthEvts(curM);
   const lbl = document.getElementById('sideLabel');
-  if (lbl) lbl.textContent = `${MONTHS[curM]} 일정`;
   const cards = document.getElementById('ecards');
   if (!cards) return;
   cards.innerHTML = '';
-  if (!evts.length) { cards.innerHTML = '<div class="no-evts">이번 달 등록된 일정이 없습니다.</div>'; return; }
+  // 다가오는 일정 (14일 이내)
+  const upcoming = upcomingEvts(14);
+  if (upcoming.length) {
+    const upWrap = document.createElement('div');
+    upWrap.className = 'upcoming-section';
+    let upHtml = `<div class="upcoming-label">🔔 다가오는 일정 <span style="color:var(--text3);font-weight:500;font-size:11px">· 14일 이내</span></div>`;
+    upcoming.slice(0, 5).forEach(ev => {
+      const cat = catOf(ev.cat), p = pal(cat.color);
+      const dd = ddayLabel(ev.date);
+      const ddClass = dd === '오늘' ? ' today' : (dd === '내일' ? ' tomorrow' : '');
+      const dt = new Date(ev.date);
+      upHtml += `<div class="upcoming-card" onclick="openViewByKey('${ev._key}')">
+        <div class="upcoming-top">
+          <span class="dday-badge${ddClass}">${dd}</span>
+          <span class="badge" style="background:${p.bg};color:${p.text};font-size:10px">${escHtml(cat.name)}</span>
+        </div>
+        <div class="upcoming-title">${escHtml(ev.title)}</div>
+        <div class="upcoming-meta">${ev.date} (${DKO[dt.getDay()]})${ev.time?' · '+escHtml(ev.time):''}${ev.place?' · '+escHtml(ev.place):''}</div>
+      </div>`;
+    });
+    upWrap.innerHTML = upHtml;
+    cards.appendChild(upWrap);
+  }
+  // 월별 섹션
+  if (lbl) lbl.textContent = `${MONTHS[curM]} 일정`;
+  const evts = monthEvts(curM);
+  if (!evts.length) {
+    const empty = document.createElement('div');
+    empty.className = 'no-evts';
+    empty.textContent = activeCatsFilter ? '필터에 해당하는 일정이 없습니다.' : '이번 달 등록된 일정이 없습니다.';
+    cards.appendChild(empty);
+    return;
+  }
   evts.forEach(ev => {
     const cat = catOf(ev.cat), dt = new Date(ev.date), p = pal(cat.color);
     const isR = ev.dateEnd && ev.dateEnd !== ev.date;
     const c = document.createElement('div'); c.className = 'ecard';
     c.innerHTML = `
-      <div class="ec-top"><span class="badge" style="background:${p.bg};color:${p.text}">${cat.name}</span><span class="ec-date">${ev.date} (${DKO[dt.getDay()]})</span></div>
+      <div class="ec-top"><span class="badge" style="background:${p.bg};color:${p.text}">${escHtml(cat.name)}</span><span class="ec-date">${ev.date} (${DKO[dt.getDay()]})</span></div>
       <div class="ec-title">${escHtml(ev.title)}</div>
       ${isR?`<div class="ec-range">~ ${ev.dateEnd} (${DKO[new Date(ev.dateEnd).getDay()]}) 까지</div>`:''}
-      ${(ev.time||ev.place)?`<div class="ec-meta">${ev.time||''}${ev.time&&ev.place?' · ':''}${ev.place||''}</div>`:''}`;
+      ${(ev.time||ev.place)?`<div class="ec-meta">${escHtml(ev.time||'')}${ev.time&&ev.place?' · ':''}${escHtml(ev.place||'')}</div>`:''}`;
     c.onclick = () => openView(ev);
     cards.appendChild(c);
   });
@@ -606,6 +701,7 @@ function renderNotice() {
 // ══════════════════════════════════════════
 function openView(ev) {
   const cat = catOf(ev.cat), p = pal(cat.color);
+  const shareRow = `<div style="display:flex;gap:6px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--border)"><button class="btn-g" style="flex:1;font-size:12px;padding:8px 10px" onclick="copyShareLink('${ev._key}')">🔗 링크 복사</button><button class="btn-g" style="flex:1;font-size:12px;padding:8px 10px" onclick="downloadIcs('${ev._key}')">📅 내 캘린더에 추가</button></div>`;
   const adminFooter = isAdmin
     ? `<button class="btn-d" onclick="delEvt('${ev._key}')">삭제</button><button class="btn-g" onclick="openForm(getE('${ev._key}'),null)">수정</button><button class="btn-g" onclick="closeModal()">닫기</button>`
     : `<button class="btn-close" onclick="closeModal()">확인</button>`;
@@ -618,6 +714,7 @@ function openView(ev) {
       ${ev.place?`<div class="drow"><div class="dlbl">장소</div><div class="dval">${escHtml(ev.place)}</div></div>`:''}
       ${ev.note?`<div class="drow"><div class="dlbl">안내</div><div class="dval"><div class="note-pre">${escHtml(ev.note)}</div></div></div>`:''}
       ${ev.link?`<div class="drow"><div class="dlbl">링크</div><div class="dval"><button class="link-btn" onclick="openAppLink('${ev.link.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg><span class="link-btn-text">관련 링크 열기</span></button></div></div>`:''}
+      ${shareRow}
     </div>
     <div class="mf">${adminFooter}</div>`;
   document.getElementById('overlay').classList.add('open');
@@ -985,6 +1082,160 @@ async function clearDefaultMonth() {
 window.clearDefaultMonth = clearDefaultMonth;
 
 // ══════════════════════════════════════════
+// SHARE LINK + iCAL EXPORT (학부모 UX)
+// ══════════════════════════════════════════
+function copyShareLink(key) {
+  const url = new URL(window.location.href);
+  url.hash = `event=${YEAR}:${key}`;
+  const link = url.toString();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(link).then(() => {
+      showToast('링크가 복사되었습니다');
+    }).catch(() => {
+      prompt('아래 링크를 복사하세요:', link);
+    });
+  } else {
+    prompt('아래 링크를 복사하세요:', link);
+  }
+}
+window.copyShareLink = copyShareLink;
+
+function genIcs(ev) {
+  const dtStart = ev.date.replace(/-/g, '');
+  const endDateStr = ev.dateEnd && ev.dateEnd !== ev.date ? ev.dateEnd : ev.date;
+  const endD = new Date(endDateStr); endD.setDate(endD.getDate() + 1);
+  const dtEnd = `${endD.getFullYear()}${String(endD.getMonth()+1).padStart(2,'0')}${String(endD.getDate()).padStart(2,'0')}`;
+  const uid = `${ev._key || Date.now()}-${YEAR}@quetta-cal`;
+  const now = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const safe = s => (s || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+  const lines = [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//QUETTA//Calendar//KO','CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${now}`,
+    `DTSTART;VALUE=DATE:${dtStart}`,
+    `DTEND;VALUE=DATE:${dtEnd}`,
+    `SUMMARY:${safe(ev.title)}`,
+    ev.place ? `LOCATION:${safe(ev.place)}` : null,
+    ev.note ? `DESCRIPTION:${safe(ev.note)}${ev.time?' (시간: '+safe(ev.time)+')':''}` : (ev.time?`DESCRIPTION:시간: ${safe(ev.time)}`:null),
+    ev.link ? `URL:${ev.link}` : null,
+    'END:VEVENT','END:VCALENDAR'
+  ].filter(x => x !== null);
+  return lines.join('\r\n');
+}
+
+function downloadIcs(key) {
+  const ev = events[key] ? {...events[key], _key: key} : null;
+  if (!ev) { alert('일정을 찾을 수 없습니다.'); return; }
+  const ics = genIcs(ev);
+  const blob = new Blob([ics], {type: 'text/calendar;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const safeName = (ev.title || 'event').replace(/[\/\\:*?"<>|]/g, '_').slice(0, 40);
+  a.download = `${safeName}_${ev.date}.ics`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('캘린더 파일이 다운로드되었습니다');
+}
+window.downloadIcs = downloadIcs;
+
+// ══════════════════════════════════════════
+// SEARCH (학부모 UX)
+// ══════════════════════════════════════════
+function openSearch() {
+  document.getElementById('modal').className = 'modal wide';
+  document.getElementById('modal').innerHTML = `
+    <div class="mh"><h2>일정 검색</h2><button class="cx" onclick="closeModal()">✕</button></div>
+    <div class="mb">
+      <div class="fg"><input class="fi" type="text" id="searchInput" placeholder="제목 · 안내 · 장소에서 검색" oninput="doSearch()"></div>
+      <div id="searchResults"><p style="font-size:12px;color:var(--text3);padding:1rem 0;text-align:center">검색어를 입력하세요.</p></div>
+    </div>`;
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(() => { const inp = document.getElementById('searchInput'); if (inp) inp.focus(); }, 100);
+}
+window.openSearch = openSearch;
+
+function doSearch() {
+  const inp = document.getElementById('searchInput');
+  const resultsEl = document.getElementById('searchResults');
+  if (!inp || !resultsEl) return;
+  const q = inp.value.trim().toLowerCase();
+  if (!q) {
+    resultsEl.innerHTML = '<p style="font-size:12px;color:var(--text3);padding:1rem 0;text-align:center">검색어를 입력하세요.</p>';
+    return;
+  }
+  const matches = Object.entries(events).filter(([k, e]) => {
+    const t = (e.title || '').toLowerCase();
+    const n = (e.note || '').toLowerCase();
+    const p = (e.place || '').toLowerCase();
+    return t.includes(q) || n.includes(q) || p.includes(q);
+  }).map(([k, e]) => ({...e, _key: k})).sort((a, b) => a.date < b.date ? -1 : 1);
+  if (!matches.length) {
+    resultsEl.innerHTML = `<p style="font-size:13px;color:var(--text3);padding:1rem 0;text-align:center">"<strong>${escHtml(q)}</strong>"에 대한 결과가 없습니다.</p>`;
+    return;
+  }
+  const hl = (text) => {
+    if (!text) return '';
+    const idx = text.toLowerCase().indexOf(q);
+    if (idx < 0) return escHtml(text);
+    return escHtml(text.slice(0, idx)) + '<span class="search-hl">' + escHtml(text.slice(idx, idx + q.length)) + '</span>' + escHtml(text.slice(idx + q.length));
+  };
+  resultsEl.innerHTML = `
+    <p style="font-size:12px;color:var(--text2);margin-bottom:10px"><strong style="color:var(--text)">${matches.length}건</strong> 발견</p>
+    <div class="search-result-list">
+      ${matches.map(ev => {
+        const cat = catOf(ev.cat), p = pal(cat.color);
+        const dt = new Date(ev.date);
+        const isR = ev.dateEnd && ev.dateEnd !== ev.date;
+        return `<div class="ecard" onclick="searchJumpTo('${ev._key}')">
+          <div class="ec-top"><span class="badge" style="background:${p.bg};color:${p.text}">${escHtml(cat.name)}</span><span class="ec-date">${ev.date} (${DKO[dt.getDay()]})${isR?' ~ '+ev.dateEnd:''}</span></div>
+          <div class="ec-title">${hl(ev.title)}</div>
+          ${ev.place?`<div class="ec-meta">📍 ${hl(ev.place)}</div>`:''}
+          ${ev.note?`<div class="ec-meta" style="margin-top:2px;max-height:40px;overflow:hidden">${hl(ev.note.slice(0,120))}${ev.note.length>120?'...':''}</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+window.doSearch = doSearch;
+
+function searchJumpTo(key) {
+  const ev = events[key];
+  if (!ev) return;
+  const m = parseInt(ev.date.split('-')[1]) - 1;
+  curM = m;
+  renderTabs(); renderCal(); renderSide();
+  closeModal();
+  setTimeout(() => openView({...ev, _key: key}), 120);
+}
+window.searchJumpTo = searchJumpTo;
+
+// ══════════════════════════════════════════
+// SHARE LINK HASH HANDLER (학부모 UX)
+// ══════════════════════════════════════════
+let hashHandled = false;
+function handleEventHash() {
+  if (hashHandled) return;
+  const hash = window.location.hash;
+  const m = hash.match(/^#event=([^:]+):(.+)$/);
+  if (!m) return;
+  const y = m[1], k = m[2];
+  if (y !== YEAR) {
+    hashHandled = true;
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+    showToast(`다른 연도(${y}년)의 일정입니다. 관리자만 조회 가능합니다.`);
+    return;
+  }
+  const ev = events[k];
+  if (!ev) return;  // events가 아직 로드 중일 수 있음 - 다음 콜백에서 재시도
+  hashHandled = true;
+  curM = parseInt(ev.date.split('-')[1]) - 1;
+  renderTabs(); renderCal(); renderSide();
+  setTimeout(() => openView({...ev, _key: k}), 200);
+  history.replaceState(null, '', window.location.pathname + window.location.search);
+}
+
+// ══════════════════════════════════════════
 // COPY FROM PREVIOUS YEAR (admin)
 // ══════════════════════════════════════════
 let copyPreviewData = null;  // {items, notices, srcYear}
@@ -1055,9 +1306,15 @@ async function loadCopyPreview() {
     let noticeData = null;
     if (includeNotices) {
       const nsnap = await db.ref(`notices/${srcYear}`).once('value');
-      noticeData = nsnap.val() || {};
+      const allNotices = nsnap.val() || {};
+      if (srcRange === 'all') {
+        noticeData = allNotices;
+      } else {
+        const key = String(parseInt(srcRange)).padStart(2, '0');
+        noticeData = allNotices[key] ? {[key]: allNotices[key]} : {};
+      }
     }
-    copyPreviewData = {items, notices: noticeData, srcYear};
+    copyPreviewData = {items, notices: noticeData, srcYear, srcRange};
     renderCopyPreview();
   } catch (e) {
     preview.innerHTML = `<p style="color:var(--red);font-size:13px;padding:1rem 0">불러오기 실패: ${escHtml(e.message)}</p>`;
@@ -1072,7 +1329,16 @@ function renderCopyPreview() {
   const selCount = items.filter(x => x.include).length;
   const validCount = items.filter(x => x.catValid).length;
   const invalidCount = items.length - validCount;
-  const noticeInfo = noticeData ? `<p style="font-size:12px;color:var(--mint-dark);margin-bottom:10px;padding:6px 10px;background:var(--mint-light);border-radius:var(--rs)">📢 월별 공지 ${Object.keys(noticeData).length}개월 함께 복사됩니다.</p>` : '';
+  let noticeInfo = '';
+  if (noticeData) {
+    const noticeKeys = Object.keys(noticeData).sort();
+    if (noticeKeys.length === 0) {
+      noticeInfo = `<p style="font-size:12px;color:var(--text3);margin-bottom:10px;padding:6px 10px;background:var(--bg);border-radius:var(--rs)">📢 선택한 월에 복사할 공지가 없습니다.</p>`;
+    } else {
+      const monthsLabel = noticeKeys.map(k => parseInt(k) + '월').join(', ');
+      noticeInfo = `<p style="font-size:12px;color:var(--mint-dark);margin-bottom:10px;padding:6px 10px;background:var(--mint-light);border-radius:var(--rs)">📢 ${monthsLabel} 공지 ${noticeKeys.length}개 함께 복사됩니다.<br><span style="font-size:11px;color:#854F0B">⚠ ${YEAR}년 해당 월에 공지가 있다면 덮어씌워집니다.</span></p>`;
+    }
+  }
   const invalidInfo = invalidCount ? `<p style="font-size:11px;color:#854F0B;margin-bottom:6px">⚠ 분류가 삭제된 ${invalidCount}건은 자동 제외됩니다.</p>` : '';
   const rows = items.map((it, i) => {
     const cat = cats.find(c => c.id === it.data.cat);
