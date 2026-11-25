@@ -752,7 +752,8 @@ window.delEvt = delEvt;
 
 async function undoDelete() {
   if (!lastDeleted) return;
-  const {data, year} = lastDeleted;
+  const {data, year, expireTimerId} = lastDeleted;
+  if (expireTimerId) clearTimeout(expireTimerId);
   try {
     await db.ref(`events/${year}`).push(data);
     if (data.date && year === YEAR) {
@@ -1187,7 +1188,7 @@ window.doLogout = doLogout;
 
 function enterAdminMode() {
   document.body.classList.add('admin-mode');
-  document.getElementById('adminToolbar').style.display = 'block';
+  document.getElementById('adminToolbar').style.display = 'flex';
   populateYearSelect();
   updatePastYearBanner();
   renderCal();
