@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>학사일정 안내</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1BBFB0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QUETTA 학사일정">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<script>(function(){var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);})();</script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
@@ -15,7 +23,31 @@
   --mint:#1BBFB0; --mint-dark:#13A89A; --mint-light:#E5F9F7;
   --red:#D63B3B; --red-bg:#FDF0F0;
   --r:10px; --rs:6px;
+  color-scheme: light;
 }
+:root[data-theme="dark"] {
+  --black:#000000; --dark:#0D0D0E; --dark2:#1A1A1C;
+  --bg:#0A0A0B; --surface:#17171A; --surface2:#242428;
+  --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.16);
+  --text:#F0F0F2; --text2:#9898A0; --text3:#5A5A62;
+  --mint-light:rgba(27,191,176,0.18);
+  --red-bg:rgba(214,59,59,0.15);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --black:#000000; --dark:#0D0D0E; --dark2:#1A1A1C;
+    --bg:#0A0A0B; --surface:#17171A; --surface2:#242428;
+    --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.16);
+    --text:#F0F0F2; --text2:#9898A0; --text3:#5A5A62;
+    --mint-light:rgba(27,191,176,0.18);
+    --red-bg:rgba(214,59,59,0.15);
+    color-scheme: dark;
+  }
+}
+.theme-toggle { background:rgba(255,255,255,0.08); color:white; border:1px solid rgba(255,255,255,0.12); border-radius:99px; width:32px; height:32px; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; font-family:inherit; flex-shrink:0; }
+.theme-toggle:hover { background:rgba(255,255,255,0.18); }
+.header-right { display:flex; align-items:center; gap:10px; }
 body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
 /* ── HEADER ── */
@@ -63,7 +95,13 @@ body.admin-mode .add-evt-btn { display:inline-flex; }
 .dh { background:var(--surface2); padding:9px 4px; text-align:center; font-size:11px; font-weight:600; color:var(--text2); letter-spacing:.03em; }
 .dh.s { color:#D63B3B; } .dh.sa { color:#2A70D4; }
 .dc { background:var(--surface); min-height:90px; padding:6px; cursor:pointer; transition:background .1s; }
-.dc.other { background:#F8F8FA; }
+.dc.other { background:var(--surface2); }
+:root[data-theme="dark"] .btn-p, :root[data-theme="dark"] .btn-close, :root[data-theme="dark"] .add-evt-btn, :root[data-theme="dark"] .dt-btn.active { background:var(--mint-dark); }
+:root[data-theme="dark"] .btn-p:hover, :root[data-theme="dark"] .btn-close:hover, :root[data-theme="dark"] .add-evt-btn:hover { background:var(--mint); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .btn-p, :root:not([data-theme="light"]) .btn-close, :root:not([data-theme="light"]) .add-evt-btn, :root:not([data-theme="light"]) .dt-btn.active { background:var(--mint-dark); }
+  :root:not([data-theme="light"]) .btn-p:hover, :root:not([data-theme="light"]) .btn-close:hover, :root:not([data-theme="light"]) .add-evt-btn:hover { background:var(--mint); }
+}
 .dc:hover { background:var(--mint-light); }
 .dc.today { background:var(--mint-light); }
 .dn { width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:500; }
@@ -300,6 +338,35 @@ body.admin-mode .admin-fab { display:none; }
   .frow2{grid-template-columns:1fr;}
   .date-range-row{grid-template-columns:1fr;}
 }
+
+/* ── PRINT ── */
+@media print {
+  @page { size: A4; margin: 10mm; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background: white !important; color: black !important; }
+  .header, .admin-toolbar, .admin-fab, .search-btn, .add-evt-btn, .view-toggle, .theme-toggle, .overlay, .toast, .past-year-banner, .upcoming-section, .notice-edit-btn, .tabs-wrap, .leg-reset, .cal-head-right { display: none !important; }
+  .hi { padding: 0 !important; }
+  .main { display: block !important; grid-template-columns: 1fr !important; padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
+  .cal-head { margin-bottom: 8px !important; }
+  .cal-label { font-size: 20px !important; font-weight: 700 !important; color: #000 !important; }
+  .cal-grid { break-inside: avoid; page-break-inside: avoid; border-color: #666 !important; }
+  .dh, .dc { background: white !important; border-color: #ccc !important; }
+  .dh { font-size: 11px !important; padding: 5px !important; color: #333 !important; }
+  .dc { min-height: 70px !important; padding: 4px !important; }
+  .dc.other { background: #F5F5F5 !important; }
+  .dc .dn { color: #000 !important; }
+  .chip { font-size: 9px !important; padding: 1px 3px !important; print-color-adjust: exact; }
+  .legend { margin-top: 10px; gap: 8px; }
+  .leg { font-size: 10px !important; border: 1px solid #ccc !important; padding: 2px 7px !important; background: white !important; }
+  .legend .leg.inactive { display: none !important; }
+  .notice-wrap { break-inside: avoid; margin-top: 16px; border-color: #666 !important; }
+  .notice-head { background: #000 !important; padding: 8px 12px !important; }
+  .notice-body { background: white !important; color: #000 !important; font-size: 12px !important; padding: 10px 12px !important; }
+  .ecards { margin-top: 14px !important; }
+  .ecard { break-inside: avoid; border: 1px solid #ccc !important; padding: 7px 10px !important; margin-bottom: 4px !important; }
+  .side-label { font-size: 13px; margin-top: 14px; color: #000 !important; }
+  .ec-title { color: #000 !important; }
+}
 </style>
 </head>
 <body>
@@ -313,7 +380,10 @@ body.admin-mode .admin-fab { display:none; }
         <p>SCHEDULE GUIDE</p>
       </div>
     </div>
-    <div class="ybadge" id="yearBadge"></div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggleBtn" onclick="cycleTheme()" title="테마">⚙</button>
+      <div class="ybadge" id="yearBadge"></div>
+    </div>
   </div>
 </div>
 
@@ -1909,6 +1979,51 @@ function closeModal() {
 window.closeModal = closeModal;
 
 let toastTimerId = null;
+// ══════════════════════════════════════════
+// THEME TOGGLE (dark / light / auto)
+// ══════════════════════════════════════════
+function getThemeMode() { return localStorage.getItem('theme') || 'auto'; }
+
+function applyTheme(mode) {
+  if (mode === 'auto') {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.removeItem('theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', mode);
+    localStorage.setItem('theme', mode);
+  }
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  const btn = document.getElementById('themeToggleBtn');
+  if (!btn) return;
+  const m = getThemeMode();
+  btn.textContent = m === 'dark' ? '☀' : (m === 'light' ? '🌙' : '⚙');
+  btn.title = `테마: ${m === 'auto' ? '자동 (시스템 설정)' : m === 'light' ? '라이트' : '다크'}`;
+}
+
+function cycleTheme() {
+  const cur = getThemeMode();
+  const next = cur === 'auto' ? 'light' : (cur === 'light' ? 'dark' : 'auto');
+  applyTheme(next);
+  const label = next === 'auto' ? '자동' : next === 'light' ? '라이트' : '다크';
+  showToast(`테마: ${label}`);
+}
+window.cycleTheme = cycleTheme;
+
+// 초기화 — DOM ready 후
+updateThemeIcon();
+
+// ══════════════════════════════════════════
+// PWA SERVICE WORKER
+// ══════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch((e) => console.warn('SW register failed:', e));
+  });
+}
+
 function showToast(msg, options) {
   const t = document.getElementById('toast');
   clearTimeout(toastTimerId);
