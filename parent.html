@@ -106,6 +106,72 @@ body.admin-mode .add-evt-btn { display:inline-flex; }
 .search-btn:hover { background:var(--surface2); color:var(--text); }
 .search-hl { background:#FFF2A8; padding:0 2px; border-radius:2px; }
 
+/* ── VIEW TOGGLE (admin) ── */
+.view-toggle { display:none; align-items:center; border:1px solid var(--border2); border-radius:var(--rs); overflow:hidden; margin-right:4px; }
+.view-toggle button { padding:6px 12px; font-size:12px; font-weight:600; background:none; border:none; cursor:pointer; color:var(--text2); font-family:inherit; }
+.view-toggle button.active { background:var(--black); color:white; }
+.view-toggle button:not(.active):hover { background:var(--surface2); }
+body.admin-mode .view-toggle { display:inline-flex; }
+
+/* ── WEEK VIEW ── */
+.week-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; }
+.week-nav-btn { padding:6px 10px; border:1px solid var(--border2); background:var(--surface); border-radius:var(--rs); cursor:pointer; font-family:inherit; font-size:13px; color:var(--text); }
+.week-nav-btn:hover { background:var(--surface2); }
+.week-label { font-size:14px; font-weight:700; flex:1; text-align:center; }
+.week-days { display:flex; flex-direction:column; gap:10px; margin-bottom:1rem; }
+.week-day { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:12px 14px; }
+.week-day.today { border-color:var(--mint); background:var(--mint-light); }
+.week-day-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.week-day-date { font-size:13px; font-weight:700; }
+.week-day-date.sun { color:var(--red); }
+.week-day-date.sat { color:#2A70D4; }
+.week-day-cnt { font-size:11px; color:var(--text3); }
+.week-evts { display:flex; flex-direction:column; gap:5px; }
+.week-evt { padding:7px 10px; border-radius:var(--rs); cursor:pointer; font-size:13px; display:flex; align-items:center; gap:8px; }
+.week-evt:hover { opacity:.85; }
+.week-evt-time { font-size:11px; font-weight:700; opacity:.7; min-width:38px; }
+.week-day-empty { font-size:12px; color:var(--text3); text-align:center; padding:6px 0; }
+
+/* ── DASHBOARD ── */
+.dash-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.dash-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:14px; }
+.dash-card.full { grid-column:1/-1; }
+.dash-card-label { font-size:11px; color:var(--text2); font-weight:600; letter-spacing:.04em; text-transform:uppercase; margin-bottom:6px; }
+.dash-card-value { font-size:24px; font-weight:800; color:var(--text); line-height:1.1; letter-spacing:-.02em; }
+.dash-card-sub { font-size:11px; color:var(--text3); margin-top:3px; }
+.dash-card-list { display:flex; flex-direction:column; gap:4px; margin-top:6px; max-height:140px; overflow-y:auto; }
+.dash-card-list-item { font-size:12px; color:var(--text); padding:4px 0; display:flex; justify-content:space-between; gap:8px; }
+.dash-card-list-item .m { color:var(--text3); font-size:11px; flex-shrink:0; }
+.dash-missing-month { display:inline-block; font-size:11px; padding:3px 8px; background:var(--red-bg); color:var(--red); border-radius:99px; margin:2px 3px 0 0; font-weight:600; }
+.dash-cat-bar { display:flex; align-items:center; gap:8px; margin-top:4px; }
+.dash-cat-bar-label { font-size:12px; min-width:70px; }
+.dash-cat-bar-track { flex:1; height:6px; background:var(--surface2); border-radius:99px; overflow:hidden; }
+.dash-cat-bar-fill { height:100%; border-radius:99px; }
+.dash-cat-bar-num { font-size:11px; color:var(--text3); min-width:24px; text-align:right; }
+@media (max-width:720px) { .dash-grid { grid-template-columns:1fr; } }
+
+/* ── AUDIT LOG ── */
+.audit-list { max-height:460px; overflow-y:auto; display:flex; flex-direction:column; gap:1px; background:var(--border); border:1px solid var(--border); border-radius:var(--rs); }
+.audit-item { background:var(--surface); padding:10px 13px; font-size:12px; display:flex; flex-direction:column; gap:3px; }
+.audit-top { display:flex; justify-content:space-between; gap:8px; align-items:center; }
+.audit-action { font-size:10px; font-weight:800; padding:2px 7px; border-radius:3px; letter-spacing:.03em; }
+.audit-action.create { background:#E1F5EE; color:#0F6E56; }
+.audit-action.update { background:#E6F1FB; color:#185FA5; }
+.audit-action.delete { background:#FBEAF0; color:#993556; }
+.audit-action.restore { background:#FAEEDA; color:#854F0B; }
+.audit-action.copy { background:#EEEDFE; color:#3C3489; }
+.audit-time { font-size:11px; color:var(--text3); }
+.audit-summary { color:var(--text); }
+.audit-user { font-size:10px; color:var(--text3); }
+
+/* ── MORE DROPDOWN ── */
+.more-wrap { position:relative; display:inline-block; }
+.more-menu { display:none; position:absolute; top:100%; right:0; margin-top:4px; background:var(--surface); border:1px solid var(--border); border-radius:var(--rs); box-shadow:0 8px 24px rgba(0,0,0,0.12); min-width:170px; z-index:50; overflow:hidden; }
+.more-menu.open { display:block; }
+.more-menu button { display:block; width:100%; padding:10px 14px; background:none; border:none; cursor:pointer; text-align:left; font-size:13px; color:var(--text); font-family:inherit; }
+.more-menu button:hover { background:var(--surface2); }
+.more-menu .divider { height:1px; background:var(--border); margin:2px 0; }
+
 /* ── NOTICE ── */
 .notice-wrap { margin-top:20px; border-radius:var(--r); overflow:hidden; border:1px solid var(--border); }
 .notice-head { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--black); }
@@ -257,11 +323,21 @@ body.admin-mode .admin-fab { display:none; }
     <div class="admin-tag">관리자 모드</div>
     <div class="admin-tools">
       <select class="admin-year-sel" id="yearSel" onchange="switchYear(this.value)"></select>
+      <button class="admin-btn" onclick="openDashboard()">📊 대시보드</button>
       <button class="admin-btn" onclick="openSettings()">⚙️ 설정</button>
       <button class="admin-btn" onclick="openCatManager()">🏷️ 분류</button>
       <button class="admin-btn" onclick="openDefaultMonthSetting()">📅 첫화면</button>
       <button class="admin-btn" onclick="openCopyFromYear()">📥 전년 복사</button>
-      <button class="admin-btn danger" onclick="doLogout()">로그아웃</button>
+      <div class="more-wrap">
+        <button class="admin-btn" onclick="toggleMoreMenu(event)">⋯ 더보기</button>
+        <div class="more-menu" id="moreMenu">
+          <button onclick="openAuditLog();closeMoreMenu()">📜 변경 이력</button>
+          <button onclick="downloadBackup();closeMoreMenu()">💾 JSON 백업</button>
+          <button onclick="openChangePassword();closeMoreMenu()">🔐 비밀번호 변경</button>
+          <div class="divider"></div>
+          <button onclick="doLogout();closeMoreMenu()" style="color:var(--red)">로그아웃</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -278,6 +354,10 @@ body.admin-mode .admin-fab { display:none; }
       <div class="cal-head">
         <div class="cal-label" id="calLabel"></div>
         <div class="cal-head-right">
+          <div class="view-toggle" id="viewToggle">
+            <button id="vtMonth" class="active" onclick="switchView('month')">월간</button>
+            <button id="vtWeek" onclick="switchView('week')">주간</button>
+          </div>
           <button class="search-btn" onclick="openSearch()" title="일정 검색">🔍 검색</button>
           <button class="add-evt-btn" onclick="openForm(null,null)">+ 일정 추가</button>
         </div>
@@ -358,6 +438,8 @@ let editCatId=null, selColor='pink', pendingLogoData='';
 let formDateType='single';
 let defaultMonthApplied=false;
 let activeCatsFilter=null;  // null = 전체, Set = 지정 분류만
+let viewMode='month';  // 'month' | 'week' (admin only)
+let weekStart=null;  // Date object - current week's Sunday
 
 // ══════════════════════════════════════════
 // HELPERS
@@ -571,6 +653,15 @@ function renderCal() {
   const lbl = document.getElementById('calLabel');
   const g = document.getElementById('calGrid');
   if (!g) return;
+  // 주간 뷰 (관리자만)
+  if (viewMode === 'week' && isAdmin) {
+    g.className = '';
+    renderWeek();
+    renderNotice();
+    return;
+  }
+  g.className = 'cal-grid';
+  g.style.display = '';
   if (lbl) lbl.textContent = `${YEAR}년 ${MONTHS[curM]}`;
   g.innerHTML = '';
   DKO.forEach((d, i) => {
@@ -821,6 +912,9 @@ async function saveForm(key, isEdit) {
     if (isEdit) await eventsRef.child(key).set(data);
     else await eventsRef.push(data);
     curM = parseInt(d.split('-')[1]) - 1;
+    const catName = (cats.find(c=>c.id===data.cat)||{}).name || '';
+    const dateRange = dEnd && dEnd !== d ? `${d}~${dEnd}` : d;
+    logAudit(isEdit?'update':'create', 'event', `[${YEAR}] ${dateRange} ${t} (${catName})`, {year: YEAR});
     closeModal();
     showToast(isEdit ? '수정되었습니다.' : '추가되었습니다.');
   } catch (e) { alert('저장 실패: ' + e.message); }
@@ -838,6 +932,9 @@ async function delEvt(key) {
     if (lastDeleted && lastDeleted.expireTimerId) clearTimeout(lastDeleted.expireTimerId);
     const yearAtDelete = YEAR;
     lastDeleted = {data: {...data}, year: yearAtDelete, expireTimerId: null};
+    const catName = (cats.find(c=>c.id===data.cat)||{}).name || '';
+    const dateRange = data.dateEnd && data.dateEnd !== data.date ? `${data.date}~${data.dateEnd}` : data.date;
+    logAudit('delete', 'event', `[${yearAtDelete}] ${dateRange} ${data.title} (${catName})`, {year: yearAtDelete});
     showToast('삭제되었습니다.', {
       duration: 10000,
       action: {label: '되돌리기', handler: undoDelete}
@@ -856,6 +953,8 @@ async function undoDelete() {
     if (data.date && year === YEAR) {
       curM = parseInt(data.date.split('-')[1]) - 1;
     }
+    const dateRange = data.dateEnd && data.dateEnd !== data.date ? `${data.date}~${data.dateEnd}` : data.date;
+    logAudit('restore', 'event', `[${year}] ${dateRange} ${data.title} (삭제 취소)`, {year});
     lastDeleted = null;
     showToast('복구되었습니다.');
   } catch (e) { alert('복구 실패: ' + e.message); }
@@ -924,21 +1023,30 @@ window.resetCatForm = resetCatForm;
 async function doSaveCat() {
   const name = document.getElementById('catName').value.trim();
   if (!name) { alert('분류 이름을 입력해주세요.'); return; }
+  const wasEdit = !!editCatId;
   let nc = editCatId ? cats.map(c => c.id === editCatId ? {...c, name, color: selColor} : c)
                      : [...cats, {id: 'c' + Date.now().toString(36), name, color: selColor}];
   const obj = {}; nc.forEach((c, i) => obj[i] = c);
-  try { await db.ref('cats').set(obj); showToast(editCatId ? '분류 수정됨' : '분류 추가됨'); editCatId = null; selColor = 'pink'; renderCatModal(); }
-  catch (e) { alert('저장 실패: ' + e.message); }
+  try {
+    await db.ref('cats').set(obj);
+    logAudit(wasEdit?'update':'create', 'cat', `분류 "${name}"`);
+    showToast(wasEdit ? '분류 수정됨' : '분류 추가됨');
+    editCatId = null; selColor = 'pink'; renderCatModal();
+  } catch (e) { alert('저장 실패: ' + e.message); }
 }
 window.doSaveCat = doSaveCat;
 
 async function doDelCat(id) {
   const used = Object.values(events).some(e => e.cat === id);
   if (!confirm(used ? '사용 중인 일정이 있습니다. 그래도 삭제할까요?' : '이 분류를 삭제할까요?')) return;
+  const target = cats.find(c => c.id === id);
   const nc = cats.filter(c => c.id !== id);
   const obj = {}; nc.forEach((c, i) => obj[i] = c);
-  try { await db.ref('cats').set(obj); showToast('삭제되었습니다.'); renderCatModal(); }
-  catch (e) { alert('삭제 실패: ' + e.message); }
+  try {
+    await db.ref('cats').set(obj);
+    logAudit('delete', 'cat', `분류 "${target ? target.name : id}"`);
+    showToast('삭제되었습니다.'); renderCatModal();
+  } catch (e) { alert('삭제 실패: ' + e.message); }
 }
 window.doDelCat = doDelCat;
 
@@ -958,8 +1066,13 @@ async function saveNotice() {
   const key = String(curM + 1).padStart(2, '0');
   const text = document.getElementById('noticeText').value.trim();
   try {
-    if (text) await noticesRef.child(key).set(text);
-    else await noticesRef.child(key).remove();
+    if (text) {
+      await noticesRef.child(key).set(text);
+      logAudit('update', 'notice', `[${YEAR}] ${curM+1}월 공지 수정`, {year: YEAR});
+    } else {
+      await noticesRef.child(key).remove();
+      logAudit('delete', 'notice', `[${YEAR}] ${curM+1}월 공지 삭제`, {year: YEAR});
+    }
     showToast('공지사항이 저장되었습니다.');
   } catch (e) { alert('저장 실패: ' + e.message); }
 }
@@ -1018,8 +1131,13 @@ window.removeLogo = removeLogo;
 async function saveSettings() {
   const title = document.getElementById('sTitle').value.trim();
   const logoData = pendingLogoData === '__remove__' ? '' : (pendingLogoData || siteSettings.logoData);
+  const changes = [];
+  if (title !== siteSettings.title) changes.push(`학원명: "${title}"`);
+  if (pendingLogoData === '__remove__') changes.push('로고 삭제');
+  else if (pendingLogoData) changes.push('로고 변경');
   try {
     await db.ref('settings').update({title, logoData});
+    if (changes.length) logAudit('update', 'setting', `사이트 설정 · ${changes.join(', ')}`);
     pendingLogoData = '';
     closeModal();
     showToast('저장되었습니다.');
@@ -1065,6 +1183,7 @@ async function saveDefaultMonth() {
   if (endDate < startDate) { alert('종료일은 시작일보다 늦어야 합니다.'); return; }
   try {
     await db.ref('settings/defaultMonth').set({startDate, endDate, year, month});
+    logAudit('update', 'defaultMonth', `첫화면 설정 · ${startDate}~${endDate} → ${year}년 ${month}월`);
     closeModal();
     showToast('저장되었습니다.');
   } catch (e) { alert('저장 실패: ' + e.message); }
@@ -1075,6 +1194,7 @@ async function clearDefaultMonth() {
   if (!confirm('첫화면 월 설정을 해제할까요?')) return;
   try {
     await db.ref('settings/defaultMonth').remove();
+    logAudit('delete', 'defaultMonth', '첫화면 설정 해제');
     closeModal();
     showToast('해제되었습니다.');
   } catch (e) { alert('해제 실패: ' + e.message); }
@@ -1236,6 +1356,306 @@ function handleEventHash() {
 }
 
 // ══════════════════════════════════════════
+// AUDIT LOG (admin productivity)
+// ══════════════════════════════════════════
+async function logAudit(action, target, summary, extra) {
+  if (!isAdmin) return;
+  const user = (auth.currentUser && auth.currentUser.email) || 'unknown';
+  const entry = {
+    ts: firebase.database.ServerValue.TIMESTAMP,
+    user, action, target, summary: summary || '',
+    ...(extra || {})
+  };
+  try {
+    await db.ref('audit').push(entry);
+    // 100건 초과 시 가장 오래된 것부터 정리
+    const snap = await db.ref('audit').once('value');
+    const items = [];
+    snap.forEach(ch => items.push({key: ch.key, ts: ch.val().ts || 0}));
+    if (items.length > 100) {
+      items.sort((a, b) => (a.ts || 0) - (b.ts || 0));
+      const toDelete = items.slice(0, items.length - 100);
+      const updates = {};
+      toDelete.forEach(it => updates[it.key] = null);
+      await db.ref('audit').update(updates);
+    }
+  } catch (e) { console.error('audit log failed:', e); }
+}
+
+function fmtRelTime(ts) {
+  if (!ts) return '';
+  const now = Date.now();
+  const diff = Math.floor((now - ts) / 1000);
+  if (diff < 60) return '방금 전';
+  if (diff < 3600) return `${Math.floor(diff/60)}분 전`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}시간 전`;
+  if (diff < 86400*7) return `${Math.floor(diff/86400)}일 전`;
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function actionLabel(a) {
+  return {create:'생성',update:'수정',delete:'삭제',restore:'복구',copy:'복사','upload-logo':'로고 업로드'}[a] || a;
+}
+
+async function openAuditLog() {
+  if (!isAdmin) return;
+  document.getElementById('modal').className = 'modal wide';
+  document.getElementById('modal').innerHTML = `
+    <div class="mh"><h2>변경 이력 <span style="font-size:12px;color:var(--text3);font-weight:500">(최근 100건)</span></h2><button class="cx" onclick="closeModal()">✕</button></div>
+    <div class="mb"><div id="auditLogBody"><p style="color:var(--text3);font-size:13px;text-align:center;padding:1rem 0">불러오는 중...</p></div></div>
+    <div class="mf"><button class="btn-g" onclick="closeModal()">닫기</button></div>`;
+  document.getElementById('overlay').classList.add('open');
+  try {
+    const snap = await db.ref('audit').once('value');
+    const items = [];
+    snap.forEach(ch => items.push({...ch.val(), _k: ch.key}));
+    items.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    const body = document.getElementById('auditLogBody');
+    if (!items.length) { body.innerHTML = '<p style="color:var(--text3);font-size:13px;text-align:center;padding:1rem 0">변경 이력이 없습니다.</p>'; return; }
+    body.innerHTML = `<div class="audit-list">${items.map(it => `
+      <div class="audit-item">
+        <div class="audit-top">
+          <span class="audit-action ${it.action}">${actionLabel(it.action)}</span>
+          <span class="audit-time">${fmtRelTime(it.ts)}</span>
+        </div>
+        <div class="audit-summary">${escHtml(it.summary || '')}</div>
+        <div class="audit-user">${escHtml(it.user || 'unknown')}</div>
+      </div>`).join('')}</div>`;
+  } catch (e) {
+    document.getElementById('auditLogBody').innerHTML = `<p style="color:var(--red);font-size:13px;text-align:center">이력 조회 실패: ${escHtml(e.message)}</p>`;
+  }
+}
+window.openAuditLog = openAuditLog;
+
+// ══════════════════════════════════════════
+// DASHBOARD (admin)
+// ══════════════════════════════════════════
+async function openDashboard() {
+  if (!isAdmin) return;
+  const t = new Date(); t.setHours(0,0,0,0);
+  const weekAhead = new Date(t); weekAhead.setDate(weekAhead.getDate() + 7);
+  const todayStr = fmt(t.getFullYear(), t.getMonth(), t.getDate());
+  const weekStr = fmt(weekAhead.getFullYear(), weekAhead.getMonth(), weekAhead.getDate());
+  const thisWeekEvts = Object.values(events).filter(e => e.date >= todayStr && e.date <= weekStr);
+  const thisMonthEvts = monthEvts(t.getMonth());
+  // 공지 미기재 월 (현재 월부터 12월까지)
+  const missingMonths = [];
+  const curMonth = t.getFullYear() === parseInt(YEAR) ? t.getMonth() + 1 : 1;
+  for (let m = curMonth; m <= 12; m++) {
+    const k = String(m).padStart(2, '0');
+    if (!notices[k]) missingMonths.push(m);
+  }
+  // 분류별 건수
+  const catCount = {};
+  Object.values(events).forEach(e => { catCount[e.cat] = (catCount[e.cat] || 0) + 1; });
+  const catBars = cats.map(c => {
+    const n = catCount[c.id] || 0;
+    const p = pal(c.color);
+    const pct = Object.keys(events).length ? Math.round(n * 100 / Object.keys(events).length) : 0;
+    return `<div class="dash-cat-bar"><div class="dash-cat-bar-label">${escHtml(c.name)}</div><div class="dash-cat-bar-track"><div class="dash-cat-bar-fill" style="width:${pct}%;background:${p.text}"></div></div><div class="dash-cat-bar-num">${n}</div></div>`;
+  }).join('');
+  // 최근 이력
+  let recentHtml = '<p style="color:var(--text3);font-size:12px;padding:6px 0">이력 없음</p>';
+  try {
+    const auditSnap = await db.ref('audit').once('value');
+    const auditItems = [];
+    auditSnap.forEach(ch => auditItems.push(ch.val()));
+    auditItems.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    const recent = auditItems.slice(0, 5);
+    if (recent.length) {
+      recentHtml = `<div class="dash-card-list">${recent.map(it => `<div class="dash-card-list-item"><span>${escHtml(it.summary || '').slice(0,40)}</span><span class="m">${fmtRelTime(it.ts)}</span></div>`).join('')}</div>`;
+    }
+  } catch (e) {}
+
+  document.getElementById('modal').className = 'modal wide';
+  document.getElementById('modal').innerHTML = `
+    <div class="mh"><h2>대시보드 <span style="font-size:12px;color:var(--text3);font-weight:500">· ${YEAR}년</span></h2><button class="cx" onclick="closeModal()">✕</button></div>
+    <div class="mb">
+      <div class="dash-grid">
+        <div class="dash-card"><div class="dash-card-label">이번 주 일정</div><div class="dash-card-value">${thisWeekEvts.length}</div><div class="dash-card-sub">오늘부터 7일 이내</div></div>
+        <div class="dash-card"><div class="dash-card-label">이번 달 일정</div><div class="dash-card-value">${thisMonthEvts.length}</div><div class="dash-card-sub">${MONTHS[t.getMonth()]} 전체</div></div>
+        <div class="dash-card full"><div class="dash-card-label">공지 미기재 월</div>${missingMonths.length?`<div style="margin-top:6px">${missingMonths.map(m => `<span class="dash-missing-month">${m}월</span>`).join('')}</div><div class="dash-card-sub" style="margin-top:8px">${YEAR}년 현재부터 12월까지 공지가 비어있는 월입니다.</div>`:`<div class="dash-card-value" style="font-size:16px;color:var(--mint-dark)">✓ 모든 월 작성 완료</div>`}</div>
+        <div class="dash-card full"><div class="dash-card-label">분류별 등록 건수 (${YEAR}년)</div><div style="margin-top:8px">${catBars || '<p style="color:var(--text3);font-size:12px">분류가 없습니다</p>'}</div></div>
+        <div class="dash-card full"><div class="dash-card-label">최근 변경사항 Top 5</div>${recentHtml}</div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn-g" onclick="closeModal()">닫기</button></div>`;
+  document.getElementById('overlay').classList.add('open');
+}
+window.openDashboard = openDashboard;
+
+// ══════════════════════════════════════════
+// WEEK VIEW (admin)
+// ══════════════════════════════════════════
+function switchView(mode) {
+  viewMode = mode;
+  document.getElementById('vtMonth').className = mode === 'month' ? 'active' : '';
+  document.getElementById('vtWeek').className = mode === 'week' ? 'active' : '';
+  if (mode === 'week' && !weekStart) {
+    // 오늘이 포함된 주의 일요일
+    const t = new Date();
+    t.setHours(0,0,0,0);
+    t.setDate(t.getDate() - t.getDay());
+    weekStart = t;
+  }
+  renderCal();
+}
+window.switchView = switchView;
+
+function weekShift(delta) {
+  if (!weekStart) return;
+  const d = new Date(weekStart);
+  d.setDate(d.getDate() + delta * 7);
+  weekStart = d;
+  renderCal();
+}
+window.weekShift = weekShift;
+
+function weekGoToday() {
+  const t = new Date();
+  t.setHours(0,0,0,0);
+  t.setDate(t.getDate() - t.getDay());
+  weekStart = t;
+  renderCal();
+}
+window.weekGoToday = weekGoToday;
+
+function renderWeek() {
+  const g = document.getElementById('calGrid');
+  const lbl = document.getElementById('calLabel');
+  if (!g || !weekStart) return;
+  const start = new Date(weekStart);
+  const end = new Date(start); end.setDate(end.getDate() + 6);
+  const label = `${start.getFullYear()}년 ${start.getMonth()+1}월 ${start.getDate()}일 ~ ${end.getMonth()+1}월 ${end.getDate()}일`;
+  if (lbl) lbl.textContent = label;
+  const todayStr = fmt(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+  let html = `<div class="week-nav" style="grid-column:1/-1">
+    <button class="week-nav-btn" onclick="weekShift(-1)">← 이전 주</button>
+    <div class="week-label">${label}</div>
+    <div style="display:flex;gap:6px"><button class="week-nav-btn" onclick="weekGoToday()">오늘로</button><button class="week-nav-btn" onclick="weekShift(1)">다음 주 →</button></div>
+  </div>`;
+  html += `<div class="week-days" style="grid-column:1/-1">`;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start); d.setDate(d.getDate() + i);
+    const ds = fmt(d.getFullYear(), d.getMonth(), d.getDate());
+    const isToday = ds === todayStr;
+    const dow = d.getDay();
+    const dowCls = dow === 0 ? ' sun' : (dow === 6 ? ' sat' : '');
+    const evts = evtsForDate(ds);
+    const evtRows = evts.length ? evts.map(ev => {
+      const cat = catOf(ev.cat), p = pal(cat.color);
+      return `<div class="week-evt" style="background:${p.bg};color:${p.text}" onclick="openViewByKey('${ev._key}')">${ev.time?`<span class="week-evt-time">${escHtml(ev.time)}</span>`:''}<span>${escHtml(ev.title)}</span></div>`;
+    }).join('') : '<div class="week-day-empty">일정 없음</div>';
+    html += `<div class="week-day${isToday?' today':''}"><div class="week-day-head"><div class="week-day-date${dowCls}">${d.getMonth()+1}/${d.getDate()} (${DKO[dow]})${isToday?' · 오늘':''}</div><div class="week-day-cnt">${evts.length}건</div></div><div class="week-evts">${evtRows}</div></div>`;
+  }
+  html += `</div>`;
+  g.style.display = 'block';
+  g.className = '';
+  g.innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+// JSON BACKUP (admin)
+// ══════════════════════════════════════════
+async function downloadBackup() {
+  if (!isAdmin) return;
+  if (!confirm('전체 데이터를 JSON 파일로 다운로드합니다. 진행할까요?')) return;
+  try {
+    const refs = ['events','notices','cats','settings','audit'];
+    const snaps = await Promise.all(refs.map(r => db.ref(r).once('value')));
+    const backup = {
+      exportedAt: new Date().toISOString(),
+      exportedBy: (auth.currentUser && auth.currentUser.email) || 'unknown',
+      data: Object.fromEntries(refs.map((r, i) => [r, snaps[i].val()]))
+    };
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const now = new Date();
+    a.href = url;
+    a.download = `quetta-calendar-backup-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast('백업 파일이 다운로드되었습니다');
+  } catch (e) { alert('백업 실패: ' + e.message); }
+}
+window.downloadBackup = downloadBackup;
+
+// ══════════════════════════════════════════
+// CHANGE PASSWORD (admin)
+// ══════════════════════════════════════════
+function openChangePassword() {
+  if (!isAdmin) return;
+  document.getElementById('modal').className = 'modal';
+  document.getElementById('modal').innerHTML = `
+    <div class="mh"><h2>비밀번호 변경</h2><button class="cx" onclick="closeModal()">✕</button></div>
+    <div class="mb">
+      <p style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:14px;background:var(--bg);padding:10px 12px;border-radius:var(--rs)">현재 로그인된 Firebase 계정(<strong style="color:var(--text)">${(auth.currentUser && auth.currentUser.email) || ''}</strong>)의 비밀번호를 변경합니다.</p>
+      <div class="fg"><label class="fl">현재 비밀번호</label><input class="fi" type="password" id="curPw" autocomplete="current-password"></div>
+      <div class="fg"><label class="fl">새 비밀번호</label><input class="fi" type="password" id="newPw" autocomplete="new-password" placeholder="6자 이상"></div>
+      <div class="fg"><label class="fl">새 비밀번호 확인</label><input class="fi" type="password" id="newPw2" autocomplete="new-password" onkeydown="if(event.key==='Enter')doChangePassword()"></div>
+      <div id="pwErr" style="display:none;color:var(--red);font-size:12px;margin-top:8px;text-align:center"></div>
+    </div>
+    <div class="mf"><button class="btn-g" onclick="closeModal()">취소</button><button class="btn-p" onclick="doChangePassword()">변경</button></div>`;
+  document.getElementById('overlay').classList.add('open');
+}
+window.openChangePassword = openChangePassword;
+
+async function doChangePassword() {
+  const user = auth.currentUser;
+  if (!user) { alert('로그인 세션이 만료되었습니다.'); return; }
+  const cur = document.getElementById('curPw').value;
+  const n1 = document.getElementById('newPw').value;
+  const n2 = document.getElementById('newPw2').value;
+  const errEl = document.getElementById('pwErr');
+  const setErr = (m) => { errEl.textContent = m; errEl.style.display = 'block'; };
+  if (!cur || !n1 || !n2) { setErr('모든 칸을 입력하세요.'); return; }
+  if (n1 !== n2) { setErr('새 비밀번호가 일치하지 않습니다.'); return; }
+  if (n1.length < 6) { setErr('새 비밀번호는 6자 이상이어야 합니다.'); return; }
+  if (n1 === cur) { setErr('새 비밀번호가 현재 비밀번호와 같습니다.'); return; }
+  try {
+    const cred = firebase.auth.EmailAuthProvider.credential(user.email, cur);
+    await user.reauthenticateWithCredential(cred);
+    await user.updatePassword(n1);
+    await logAudit('update', 'password', '관리자 비밀번호 변경');
+    closeModal();
+    showToast('비밀번호가 변경되었습니다');
+  } catch (e) {
+    const code = e.code || '';
+    let msg = e.message;
+    if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') msg = '현재 비밀번호가 올바르지 않습니다.';
+    else if (code === 'auth/weak-password') msg = '비밀번호가 너무 약합니다.';
+    else if (code === 'auth/too-many-requests') msg = '잠시 후 다시 시도하세요.';
+    setErr(msg);
+  }
+}
+window.doChangePassword = doChangePassword;
+
+// ══════════════════════════════════════════
+// MORE DROPDOWN
+// ══════════════════════════════════════════
+function toggleMoreMenu(ev) {
+  if (ev) ev.stopPropagation();
+  const m = document.getElementById('moreMenu');
+  if (m) m.classList.toggle('open');
+}
+window.toggleMoreMenu = toggleMoreMenu;
+
+function closeMoreMenu() {
+  const m = document.getElementById('moreMenu');
+  if (m) m.classList.remove('open');
+}
+window.closeMoreMenu = closeMoreMenu;
+
+document.addEventListener('click', (e) => {
+  const m = document.getElementById('moreMenu');
+  if (!m || !m.classList.contains('open')) return;
+  if (!e.target.closest('.more-wrap')) closeMoreMenu();
+});
+
+// ══════════════════════════════════════════
 // COPY FROM PREVIOUS YEAR (admin)
 // ══════════════════════════════════════════
 let copyPreviewData = null;  // {items, notices, srcYear}
@@ -1394,6 +1814,8 @@ async function confirmCopyFromYear() {
         await noticesRef.child(m).set(text);
       }
     }
+    const srcYear = copyPreviewData.srcYear;
+    logAudit('copy', 'event', `${srcYear}년 → ${YEAR}년: 일정 ${selected.length}건${noticeCount?' + 공지 '+noticeCount+'개':''}`, {year: YEAR});
     copyPreviewData = null;
     closeModal();
     showToast(`${selected.length}건 복사 완료${noticeCount?' (공지 '+noticeCount+'개 포함)':''}`);
@@ -1464,6 +1886,9 @@ function enterAdminMode() {
 function exitAdminMode() {
   document.body.classList.remove('admin-mode');
   document.getElementById('adminToolbar').style.display = 'none';
+  viewMode = 'month';
+  const vtM = document.getElementById('vtMonth'); if (vtM) vtM.className = 'active';
+  const vtW = document.getElementById('vtWeek'); if (vtW) vtW.className = '';
   updatePastYearBanner();
   // Return to default year/month per settings
   if (YEAR !== DEFAULT_YEAR) {
