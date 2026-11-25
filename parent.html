@@ -963,13 +963,13 @@ function openLoginModal() {
   document.getElementById('modal').innerHTML = `
     <div class="mh"><h2>관리자 로그인</h2><button class="cx" onclick="closeModal()">✕</button></div>
     <div class="mb">
-      <div class="fg"><label class="fl">ID</label><input class="fi" type="text" id="loginId" value="admin"></div>
-      <div class="fg"><label class="fl">PASSWORD</label><input class="fi" type="password" id="loginPw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="fg"><label class="fl">ID</label><input class="fi" type="text" id="loginId" placeholder="아이디" autocomplete="off"></div>
+      <div class="fg"><label class="fl">PASSWORD</label><input class="fi" type="password" id="loginPw" placeholder="비밀번호" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <div id="loginErr" style="display:none;color:var(--red);font-size:12px;margin-top:8px;text-align:center">아이디 또는 비밀번호가 올바르지 않습니다.</div>
     </div>
     <div class="mf"><button class="btn-g" onclick="closeModal()">취소</button><button class="btn-p" onclick="doLogin()">로그인</button></div>`;
   document.getElementById('overlay').classList.add('open');
-  setTimeout(() => { const p = document.getElementById('loginPw'); if (p) p.focus(); }, 100);
+  setTimeout(() => { const i = document.getElementById('loginId'); if (i) i.focus(); }, 100);
 }
 window.openLoginModal = openLoginModal;
 
